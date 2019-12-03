@@ -1,0 +1,381 @@
+<head>
+	<meta charset="utf-8">
+	<title> Web Scraping AIOHTTP </title>
+	<script type="text/javascript" src="./communication.js"></script>
+	<style type="text/css">
+		body{
+			padding: 0 auto;
+			margin: 0 auto;
+		}
+		
+		form{
+			width: 400px;
+			margin: 0 auto;
+			margin-top: 10%;
+		}
+
+		.entrybox{
+			width: 100%;
+			height: 40px;
+			font-family:sans;
+			display:block;
+      margin-top: 10px;
+		}
+
+		.entrybox label{
+			width: 100px;
+			height: 100%;
+			background-color: #ADF;
+			border:none;
+			color:rgba(0,0,0,25%);
+      text-shadow: 0px 0px 1px black ;
+			float:left;
+			line-height:40px;
+			text-align:right;
+			padding-right:5px;
+      border-bottom-left-radius: 5px;
+      border-top-left-radius: 5px;
+      font-size: 9pt;
+      font-weight: bold;
+		}
+
+		.entrybox input{
+			width: calc(100% - 110px);	
+			padding-left: 10px;
+			height: 100%;
+			border: 1px solid #DDD;
+      border-bottom-right-radius: 5px;
+      border-top-right-radius: 5px;;
+		}
+
+    .entrybox input:focus{
+      transition: 500ms;
+      outline: none;
+      border-bottom: royalblue double 2px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    form button{
+			border: none;
+      height: 40px;
+      width: 100%;
+  
+      border-radius: 5px;
+      border: dashed 1px rgba(0,0,0,25%);
+      background: rgb(113, 235, 65);
+      display: inline-block;
+      margin: 0 auto;
+      margin-top: 10px;
+      color:rgba(0,0,0,75%);
+		}
+    form button:focus{
+      outline: none;
+    }
+    form button:hover{
+      transition: 1s;
+      filter: brightness(125%);
+      color: white
+
+    }
+		
+		.entrybox:nth-child(2) input{
+			border-top: none;
+		}
+
+    .entrybox ul{
+      display: block;
+    }
+
+    .error[hidden]{
+      transform: translate(0, -125%) rotate(20deg);
+      filter:grayscale();
+      opacity: 0;
+      border:none
+    }
+
+		.error{
+      transition: 500ms;
+			background:red;
+			position:absolute;
+			display:block;
+			right: 5px;
+			top: 5px;
+			width: 200px;
+			height: 30px;
+			color: white;
+			padding: 0 auto;
+			border-radius: 2px;
+			font-size:9pt;
+			border-bottom: 5px solid rgba(0,0,0,50%);
+			text-shadow: 0px 0px 2px #A00;
+		}
+
+    .error span{
+      text-align: left;
+      display: block;
+      margin-left: 10px;
+      text-decoration: double;
+      font-family:sans-serif;
+      font-style: normal;
+      font-weight: bold;
+      margin-bottom: 5px;
+      line-height: 30px;;
+    }
+
+    .box-keywords{
+      overflow: hidden;
+      font-family: cursive;
+      font-size: 9pt;
+    }
+
+    .box-keywords li[hidden]{
+      transition: 500ms;
+      transform: rotate(720deg) scale(0);
+    }
+
+    .box-keywords li{
+      margin: 5px;
+      display: inline-block;
+      background: #5FA;
+      padding: 5px;
+      border-radius: 5px;
+      
+      color:rgba(0,0,0,75%);
+      font-weight: bold;  
+      height: 18px;
+      border: solid 1px rgb(101, 192, 146);
+    }
+
+    .box-keywords span{
+      color: black;
+      display: inline-block;
+      border-radius: 5px;
+      height: 15px;
+      width: 15px;
+      background: rgba(0,0,0,50%);
+      margin-left: 6px;
+    }
+
+    .box-keywords span::after{
+      content: "\00D7";
+      color: rgba(255, 255,255, 50%);
+      align-content: center;
+      justify-content: center;
+      position: relative;
+      left: 4px;
+      text-align: center;
+      display: inline-block;
+      font-weight: bold;
+    }
+
+    .box-result{
+      transition: 2s;
+      position: fixed;
+      display: block; 
+      width: calc(100% - 50px);
+      height:calc(100% - 10px);
+      margin: 0;
+      left: 5px;
+      top: 5px;
+      bottom: 0;
+      right: 0;
+      background: rgba(0,0,0,50%);
+      border-radius: 10px;
+    }
+
+    .box-result[hidden]{
+      display: none;
+    } 
+
+    #center-response{
+      width: 500px;
+      margin: 0 auto;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .response{
+      font-family: sans-serif;
+      text-decoration: none;
+      color:#222;
+      width: calc(100% - 20px);
+      background: white;
+      display: block;
+      padding: 5px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .response span{
+      width: 100%;
+      display: block;
+      overflow: hidden;
+    }
+
+    .response span:first-child{
+      border-bottom: 1px solid #E9E9E9;
+      font-size: 13pt;
+      font-weight: bold;;
+    }
+  </style>
+  <script type="text/javascript">
+    var keywords = [];
+    var error = null;
+    var responses = [];
+
+    function showError(msg){
+      if (error != null)
+        error.remove();
+
+      let obj = document.createElement("div");
+      obj.setAttribute("class", "error");
+      obj.setAttribute("hidden","");
+      let text = document.createElement("span");
+      text.innerText = msg;
+      obj.appendChild(text);
+      document.body.appendChild(obj);
+      setTimeout(function(){
+        obj.removeAttribute("hidden");
+        setTimeout(function(e){
+          obj.setAttribute("hidden", "");
+        }, 2000);
+      }, 10);
+      error = obj;
+    }
+
+    function onload(){
+      document.getElementsByTagName("button")[0].addEventListener("click", submit);
+      let input = document.getElementById("input-keywords"); 
+      input.addEventListener("keypress", function(e){
+       
+        if (input.value.trim() == "")
+          return;
+        
+        if (e.key == "Enter"){
+          e.preventDefault();
+          createkeywords(input.value);
+          input.value = "";
+        }
+      });
+    }
+
+    function ontypekeyword(e){
+      if(e.key == 'Enter')
+        createkeywords()
+    }
+
+    function clearkeywords(){
+      keywords = [];
+      let node = document.getElementsByClassName("box-keywords")[0];
+      node.childNodes.forEach(function(e){
+        e.setAttribute("hidden", "");
+        setTimeout(function(){
+          e.remove();
+        }, 500);
+      });
+    }
+
+    function createkeywords(val){
+      let word = val.trim();
+      if (word == "")
+        return;
+
+      if (keywords.filter(e => e == word).length > 0) 
+        return;
+
+      let output = document.getElementsByClassName("box-keywords")[0];
+      let obj = document.createElement("li");
+      let button = document.createElement("span");
+      let index = keywords.length;
+      button.addEventListener("click", function(e){
+        keywords = keywords.filter(a => a != val);
+        console.log(keywords);
+        obj.setAttribute("hidden","");
+        setTimeout(function(){
+          obj.remove();
+        }, 500);
+      });
+      obj.innerText = word;
+      output.appendChild(obj);
+      obj.appendChild(button);
+      keywords.push(word);
+    }
+
+    function submit(){
+      let url = document.getElementById("url").value;
+      
+      if (url.trim() == ""){
+        showError("I cannot go anywhere");
+        return;
+      }
+
+      if (!url.startsWith("http://"))
+        url = "http://" + url;
+      
+      let input = document.getElementById("input-keywords");
+      createkeywords(input.value);
+      input.value = "";
+      if (keywords.length == 0){
+        showError("Where're keywords?");
+        return;
+      }
+
+      let saved = keywords;
+      console.log(saved);
+      responses = [];
+
+      document.getElementsByClassName("box-result")[0].removeAttribute("hidden");
+      sendRequest(url, saved, function(res){
+        responses.push(res);
+        createresponseelement(res);
+      }, function(){
+        console.log("finished");
+        if(responses.length == 0){
+          showError("Found nothing :|");
+          document.getElementsByClassName("box-result")[0].setAttribute("hidden", "");
+        }
+      });
+      clearkeywords();
+    }
+
+    function createresponseelement(res){
+      let center = document.getElementById("center-response");
+      let obj = document.createElement("a");
+      let title = document.createElement("span");
+      let text = document.createElement("span");
+
+      title.innerText = res["url"];
+      text.innerText = res["text"];
+
+      obj.appendChild(title);
+      obj.appendChild(text);
+      obj.setAttribute("class", "response");
+      obj.setAttribute("href", res["url"]);
+
+      center.appendChild(obj);
+    }
+  </script>
+</head>
+<body onload="onload()">
+	<!-- <div class="error">
+		Error to create a new error
+  </div> -->
+ 		<form onsubmit="return false;">
+			<div class="entrybox">
+				<label> URL </label>
+				<input type="text" placeholder="google.com" id="url" autocomplete="off">
+			</div>
+			<div class="entrybox">
+        <label> KEYWORDS </label>
+				<input type="text" id="input-keywords" autocomplete="off" placeholder="so long and thanks for all the fish">
+      </div>
+      <button> <b>GO!</b> </button>
+      <ul class="box-keywords"></ul>
+    </form>
+  <ul class="box-result" hidden>
+    <div id="center-response">
+     
+    </div>
+  </ul>
+</body>
