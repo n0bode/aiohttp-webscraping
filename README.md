@@ -1,6 +1,7 @@
 # aiohttp-webscraping 
 
 > Simple webscraping made with AIOHTTP in python concurrent
+> Used javascript also to create websocket cliente to comunicate with AioHttp WebSocketResponse
 
 # Pip3 dependecies 
  `$ pip install aiohttp beautifulsoup4` 
