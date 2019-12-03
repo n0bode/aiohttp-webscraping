@@ -185,8 +185,21 @@
     }
 
     .box-result[hidden]{
-      display: none;
+      transition: 2s;
+      display: none
     } 
+
+    .box-result #btclose{
+      float:right;
+      border: 1px solid #F44;
+      background-color: #F22;
+      border-radius: 20px;
+      margin-right: 10px;
+      margin-top: 10px;
+      width: 30px;
+      height: 30px;
+      color:white;
+    }
 
     #center-response{
       width: 500px;
@@ -326,9 +339,12 @@
       responses = [];
 
       document.getElementsByClassName("box-result")[0].removeAttribute("hidden");
+      let center = document.getElementById("center-response");
+
+      clearresponses(center);
       sendRequest(url, saved, function(res){
         responses.push(res);
-        createresponseelement(res);
+        createresponseelement(res, center);
       }, function(){
         console.log("finished");
         if(responses.length == 0){
@@ -339,8 +355,13 @@
       clearkeywords();
     }
 
-    function createresponseelement(res){
-      let center = document.getElementById("center-response");
+    function clearresponses(center){
+      while(center.firstChild){
+        center.firstChild.remove();
+      }
+    }
+
+    function createresponseelement(res, center){
       let obj = document.createElement("a");
       let title = document.createElement("span");
       let text = document.createElement("span");
@@ -354,6 +375,14 @@
       obj.setAttribute("href", res["url"]);
 
       center.appendChild(obj);
+    }
+
+    function hideResult(){
+      let element = document.getElementsByClassName("box-result")[0];
+      element.setAttribute("hidden", "");
+      setTimeout(function(){
+        
+      }, 2000);
     }
   </script>
 </head>
@@ -374,6 +403,7 @@
       <ul class="box-keywords"></ul>
     </form>
   <ul class="box-result" hidden>
+    <button id="btclose" onmousedown="hideResult()">X</button>
     <div id="center-response">
      
     </div>

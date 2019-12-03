@@ -5,9 +5,10 @@ import asyncio
 
 async def pushlink(url, links, lock):
   async with lock:
-    if len(links) > 50 or url in links:
+    if len(links) > 150 or (url in links):
       return False
     links.append(url)
+    print(url)
   return True
 
 async def gettext(session, url):
@@ -32,8 +33,6 @@ def contains (text, keywords):
 async def fetch(ws, session, url, keywords, links=None, lock=None):
   if links is None:
     links = []
-
-  if lock is None:
     lock = asyncio.Lock()
   
   text = await gettext(session, url)
@@ -52,17 +51,20 @@ async def fetch(ws, session, url, keywords, links=None, lock=None):
   fetches = []
   for a in soup.find("body").find_all('a', href=True):
       href = a.get("href")
-      if href is None or len(href) == 1:
+      if href is None or len(href) < 4:
         continue
 
-      if href.startswith("/"):
-          href = url + href
+      if "?" in href:
+        continue
 
       if not contains(href, keywords):
         continue
 
       if href.endswith((".png", ".jpg", ".mp4", ".css")):
         continue
+
+      if href.startswith("/"):
+          href = url + href
 
       if href.startswith("http") and await pushlink(href, links, lock):
           fetches.append(asyncio.ensure_future(fetch(ws, session, href, keywords, links, lock)))

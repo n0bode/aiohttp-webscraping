@@ -8,7 +8,8 @@
 ```console
 $ >> git clone https://github.com/n0bode/aiohttp-webscraping.git webscraping
 $ cd webscraping
-$ python webscraping
+$ chmod 777 ./run.sh
+$ run.sh pypy3
 ``` 
 # You can run with Pypy3 too 
 ## First you need to install pip for pypy3 
@@ -20,6 +21,8 @@ $ python webscraping
 ```console
 $ git clone https://github.com/n0bode/aiohttp-webscraping.git webscraping
 $ cd webscraping 
-$ pypy3 scraping.py
+$ chmod 777 ./run.sh
+$ run.sh pypy3
 ```
 # If all is OK, you'll see that:
+![That](https://raw.githubusercontent.com/n0bode/aiohttp-webscraping/master/logo.gif)
